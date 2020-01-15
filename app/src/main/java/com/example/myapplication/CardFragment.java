@@ -1,6 +1,5 @@
 package com.example.myapplication;
 
-import android.app.Fragment;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
@@ -15,44 +14,32 @@ import android.widget.TextView;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONException;
 import com.alibaba.fastjson.JSONObject;
+import com.example.myapplication.base.BaseFragment;
 
 import static androidx.core.content.ContextCompat.getDrawable;
 
+public class CardFragment extends BaseFragment {
 
-/**
- * A simple {@link Fragment} subclass.
- * Use the {@link CardFragment#newInstance} factory method to
- * create an instance of this fragment.
- */
-public class CardFragment extends Fragment {
     private String fragData;
 
     public CardFragment() {
     }
 
-    public static CardFragment newInstance(String param1) {
-        CardFragment fragment = new CardFragment();
-        Bundle args = new Bundle();
-        args.putString("fragData", param1);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public int getLayoutResId() {
+        return R.layout.fragment_card;
+    }
+
+
+    @Override
+    public void init(Bundle savedInstanceState, View view) {
         if (getArguments() != null) {
             fragData = getArguments().getString("fragData");
         }
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_card, container, false);
-        final LinearLayout listNum = (LinearLayout) view.findViewById(R.id.list_num);
-        final TextView title = (TextView) view.findViewById(R.id.title);
-        final TextView ctime = (TextView) view.findViewById(R.id.ctime);
+        final LinearLayout listNum = view.findViewById(R.id.list_num);
+        final TextView title = view.findViewById(R.id.title);
+        final TextView ctime = view.findViewById(R.id.ctime);
         Log.i("传递的参数是：", fragData.substring(2, fragData.length() - 2));
         new Thread() {
             @Override
@@ -122,6 +109,13 @@ public class CardFragment extends Fragment {
                 }
             }
         }.start();
-        return view;
+    }
+
+    public static CardFragment newInstance(String param1) {
+        CardFragment fragment = new CardFragment();
+        Bundle args = new Bundle();
+        args.putString("fragData", param1);
+        fragment.setArguments(args);
+        return fragment;
     }
 }

@@ -18,15 +18,15 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.AppCompat.Light.NoActionBar"
         tools:ignore="GoogleAppIndexingWarning">
-        <activity android:name=".MainActivity">
+        <activity android:name=".activity.MainActivity">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".Cardadd"/>
-        <activity android:name=".InfoActivity"/>
+        <activity android:name=".activity.CardAddActivity"/>
+        <activity android:name=".activity.InfoActivity"/>
     </application>
 
 </manifest>

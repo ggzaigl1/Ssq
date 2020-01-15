@@ -1,13 +1,11 @@
-package com.example.myapplication;
+package com.example.myapplication.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -17,8 +15,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.IdRes;
+import androidx.annotation.Nullable;
 
 import com.alibaba.fastjson.JSONObject;
+import com.example.myapplication.R;
+import com.example.myapplication.base.BaseActivity;
 
 import org.json.JSONArray;
 
@@ -29,42 +30,47 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.Random;
 
-public class Cardadd extends Activity {
-    public TextView caseResult;
-    public CheckBox caseTypeNum;
-    public CheckBox caseTypeWord;
-    public CheckBox caseTypeDXX;
-    public EditText caseLength;
-    public EditText caseMark;
+import butterknife.BindView;
+import butterknife.OnClick;
+
+public class CardAddActivity extends BaseActivity implements View.OnClickListener {
+
+    @BindView(R.id.case_result)
+    TextView caseResult;
+    @BindView(R.id.case_type_num)
+    CheckBox caseTypeNum;
+    @BindView(R.id.case_type_word)
+    CheckBox caseTypeWord;
+    @BindView(R.id.case_type_dxx)
+    CheckBox caseTypeDXX;
+    @BindView(R.id.case_length)
+    EditText caseLength;
+    @BindView(R.id.case_mark)
+    EditText caseMark;
+    @BindView(R.id.case_group)
+    RadioGroup caseGroup;
+    @BindView(R.id.case_zdy)
+    LinearLayout caseZDY;
+
     public JSONArray arrayResult = new JSONArray();
     public static final String bigChar = "ABCDEFGHJKLMNPQRSTUVWXYZ";
     public static final String smallChar = "abcdefghijkmnpqrstuvwxyz";
     public static final String numberChar = "0123456789";
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_cardadd);
+    public int getContentViewResId() {
+        return R.layout.activity_cardadd;
+    }
 
-        Button btnBack = (Button) findViewById(R.id.btn_back);
-        Button btnCreate = (Button) findViewById(R.id.btn_create);
-        Button btnSave = (Button) findViewById(R.id.btn_save);
-        caseResult = (TextView) findViewById(R.id.case_result);
-        caseTypeNum = (CheckBox) findViewById(R.id.case_type_num);
-        caseTypeWord = (CheckBox) findViewById(R.id.case_type_word);
-        caseTypeDXX = (CheckBox) findViewById(R.id.case_type_dxx);
-        caseLength = (EditText) findViewById(R.id.case_length);
-        caseMark = (EditText) findViewById(R.id.case_mark);
+    @Override
+    public void initView(@Nullable Bundle savedInstanceState) {
         caseMark.setText("双色球");
-
-        final RadioGroup caseGroup = (RadioGroup) findViewById(R.id.case_group);
-        final LinearLayout caseZDY = (LinearLayout) findViewById(R.id.case_zdy);
         //单项选择
         caseGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
                 int radioButtonId = radioGroup.getCheckedRadioButtonId();
-                RadioButton rb = (RadioButton) findViewById(radioButtonId);
+                RadioButton rb = findViewById(radioButtonId);
                 if (radioButtonId == R.id.other_case) {
                     caseZDY.setVisibility(View.VISIBLE);
                 } else {
@@ -73,20 +79,31 @@ public class Cardadd extends Activity {
                 caseMark.setText(rb.getText());
             }
         });
-        //返回按钮
-        btnBack.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+    }
+
+    @OnClick({R.id.btn_save, R.id.btn_create, R.id.btn_back})
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()) {
+            //确认保存
+            case R.id.btn_save:
+                if (writeToFile(arrayResult.toString())) {
+                    Toast.makeText(getApplicationContext(), "新的方案结果已经保存", Toast.LENGTH_SHORT).show();
+                    Intent intent = new Intent();
+                    intent.setClass(getApplicationContext(), MainActivity.class);
+                    startActivity(intent);
+                    finish();
+                }
+                break;
+            //返回按钮
+            case R.id.btn_back:
                 Intent intent = new Intent();
                 intent.setClass(getApplicationContext(), MainActivity.class);
                 startActivity(intent);
                 finish();
-            }
-        });
-        //确认生成
-        btnCreate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
+                break;
+            //确认生成
+            case R.id.btn_create:
                 int checkId = caseGroup.getCheckedRadioButtonId();
                 //双色球
                 if (checkId == R.id.ssq_case) {
@@ -107,26 +124,11 @@ public class Cardadd extends Activity {
                             caseResult.setText(zdyCreate(iNum, iWord, iDXX, iLength));
                         }
                     } else {
-                        Toast.makeText(getApplicationContext(), "请输入方案长度",
-                                Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getApplicationContext(), "请输入方案长度", Toast.LENGTH_SHORT).show();
                     }
                 }
-            }
-        });
-        //确认保存
-        btnSave.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                if (writeToFile(arrayResult.toString())) {
-                    Toast.makeText(getApplicationContext(), "新的方案结果已经保存", Toast.LENGTH_SHORT).show();
-                    Intent intent = new Intent();
-                    intent.setClass(getApplicationContext(), MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                }
-            }
-        });
-
+                break;
+        }
     }
 
     //写入文件
@@ -164,16 +166,16 @@ public class Cardadd extends Activity {
         String ssqRedStr = Arrays.toString(ssqRed);
         String ssqBlueStr = Arrays.toString(ssqBlue);
 
-        JSONObject jo = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         //赋值
-        jo.put("type", 1);
-        jo.put("redball", ssqRedStr.substring(1, ssqRedStr.length() - 1));
-        jo.put("blueball", ssqBlueStr.substring(1, ssqBlueStr.length() - 1));
-        jo.put("mark", caseMark.getText().toString());
+        jsonObject.put("type", 1);
+        jsonObject.put("redball", ssqRedStr.substring(1, ssqRedStr.length() - 1));
+        jsonObject.put("blueball", ssqBlueStr.substring(1, ssqBlueStr.length() - 1));
+        jsonObject.put("mark", caseMark.getText().toString());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        jo.put("created", dateFormat.format(new Date()));
+        jsonObject.put("created", dateFormat.format(new Date()));
         //把JSONObject 添加到JSONArray
-        arrayResult.put(jo);
+        arrayResult.put(jsonObject);
         Log.i("双色球的json", "" + arrayResult.toString());
         return ssqRedStr + ssqBlueStr;
     }
@@ -203,16 +205,16 @@ public class Cardadd extends Activity {
         String dltRedStr = Arrays.toString(dltRed);
         String dltBlueStr = Arrays.toString(dltBlue);
 
-        JSONObject jo = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         //赋值
-        jo.put("type", 2);
-        jo.put("redball", dltRedStr.substring(1, dltRedStr.length() - 1));
-        jo.put("blueball", dltBlueStr.substring(1, dltBlueStr.length() - 1));
-        jo.put("mark", caseMark.getText().toString());
+        jsonObject.put("type", 2);
+        jsonObject.put("redball", dltRedStr.substring(1, dltRedStr.length() - 1));
+        jsonObject.put("blueball", dltBlueStr.substring(1, dltBlueStr.length() - 1));
+        jsonObject.put("mark", caseMark.getText().toString());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        jo.put("created", dateFormat.format(new Date()));
+        jsonObject.put("created", dateFormat.format(new Date()));
         //把JSONObject 添加到JSONArray
-        arrayResult.put(jo);
+        arrayResult.put(jsonObject);
         Log.i("大乐透的json", "" + arrayResult.toString());
 
         return Arrays.toString(dltRed) + Arrays.toString(dltBlue);
@@ -236,15 +238,15 @@ public class Cardadd extends Activity {
             sb.append(seedStr.charAt(random.nextInt(seedStr.length())));
         }
         String sbStr = sb.toString();
-        JSONObject jo = new JSONObject();
+        JSONObject jsonObject = new JSONObject();
         //赋值
-        jo.put("type", 3);
-        jo.put("charstr", sbStr);
-        jo.put("mark", caseMark.getText().toString());
+        jsonObject.put("type", 3);
+        jsonObject.put("charstr", sbStr);
+        jsonObject.put("mark", caseMark.getText().toString());
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        jo.put("created", dateFormat.format(new Date()));
+        jsonObject.put("created", dateFormat.format(new Date()));
         //把JSONObject 添加到JSONArray
-        arrayResult.put(jo);
+        arrayResult.put(jsonObject);
         Log.i("自定义的json", "" + arrayResult.toString());
         return sbStr;
     }
@@ -271,4 +273,6 @@ public class Cardadd extends Activity {
         }
         return false;
     }
+
+
 }
