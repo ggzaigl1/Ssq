@@ -11,6 +11,8 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -20,6 +22,8 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.BarUtils;
+import com.blankj.utilcode.util.CleanUtils;
+import com.example.myapplication.fragment.Card1Fragment;
 import com.example.myapplication.fragment.CardFragment;
 import com.example.myapplication.R;
 import com.example.myapplication.base.BaseActivity;
@@ -39,7 +43,8 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
     @BindView(R.id.Ll_title)
     LinearLayout Ll_title;
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
-
+    private File file;
+    FragmentManager mFragmentManager;
     @Override
     public int getContentViewResId() {
         return R.layout.activity_main_ssq;
@@ -48,12 +53,13 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
     @Override
     public void initView(@Nullable Bundle savedInstanceState) {
         BarUtils.addMarginTopEqualStatusBarHeight(Ll_title);
-        BarUtils.setStatusBarColor(this, ContextCompat.getColor(this,R.color.red));
+        BarUtils.setStatusBarColor(this, ContextCompat.getColor(this, R.color.red));
         verifyStoragePermissions(this);
-        Log.i("获得文件内容：", readFromFile(checkFile()));
+        mFragmentManager = getSupportFragmentManager();
+        Log.e("获得文件内容：", readFromFile(checkFile()));
     }
 
-    @OnClick({R.id.btn_add, R.id.btn_info})
+    @OnClick({R.id.btn_add, R.id.btn_info, R.id.btn_clean})
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -69,7 +75,39 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
                 startActivity(intent1);
                 finish();
                 break;
+            case R.id.btn_clean:
+                if (deleteFile(file)) {
+                    Toast.makeText(this, "缓存清除成功", Toast.LENGTH_SHORT).show();
+                } else {
+                    Toast.makeText(this, "缓存清除失败", Toast.LENGTH_SHORT).show();
+                }
+                break;
         }
+    }
+
+
+    /**
+     * 删除文件
+     *
+     * @param file
+     * @return
+     */
+    private boolean deleteFile(File file) {
+        if (file.isDirectory()) {
+            File[] files = file.listFiles();
+            for (File f : files) {
+                deleteFile(f);
+            }
+            file.delete();//如要保留文件夹，只删除文件，请注释这行
+            return true;
+        } else if (file.exists()) {
+            file.delete();
+            mFragmentManager.beginTransaction()
+                    .replace(R.id.Fl_context, Card1Fragment.newInstance())
+                    .commitAllowingStateLoss();
+            return true;
+        }
+        return false;
     }
 
     //读取文件
@@ -94,7 +132,7 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
 
     //读取文件
     public String readFromFile(String url) {
-        File file = new File(url);
+        file = new File(url);
         String content = "";
         try {
             InputStream instream = new FileInputStream(file);
@@ -104,6 +142,13 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
             //分行读取
             while ((line = buffreader.readLine()) != null) {
                 content += line + "\n";
+
+//                Bundle bundle = new Bundle();
+//                bundle.putString("fragData", line);
+//                mFragmentManager.beginTransaction()
+//                        .replace(R.id.list_content, CardFragment.newInstance(""))
+//                        .commit();
+
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 CardFragment listCard = new CardFragment();
                 Bundle bundle2 = new Bundle();

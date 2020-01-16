@@ -4,6 +4,7 @@
     android:paddingBottom="10dp">
 
     <LinearLayout
+        android:id="@+id/Ll_bgm"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@drawable/border_shape"
@@ -14,7 +15,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            android:text="随机大乐透"
             android:textColor="@color/colorPrimary"
             android:textSize="16sp" />
 
@@ -32,7 +32,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="5dp"
-            android:text="2017-01-01 10:10:10"
             android:textColor="@color/colorGray"
             android:textSize="12sp" />
     </LinearLayout>

@@ -2,6 +2,7 @@ package com.example.myapplication.fragment;
 
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.TextUtils;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.Gravity;
@@ -21,6 +22,11 @@ import static android.support.v4.content.ContextCompat.getDrawable;
 public class CardFragment extends BaseFragment {
 
     private String fragData;
+    private TextView title;
+    private TextView ctime;
+    private LinearLayout listNum;
+    private LinearLayout Ll_bgm;
+    private final static String Data = "fragData";
 
     public CardFragment() {
     }
@@ -37,22 +43,32 @@ public class CardFragment extends BaseFragment {
         if (getArguments() != null) {
             fragData = getArguments().getString("fragData");
         }
-        final LinearLayout listNum = view.findViewById(R.id.list_num);
-        final TextView title = view.findViewById(R.id.title);
-        final TextView ctime = view.findViewById(R.id.ctime);
-        Log.i("传递的参数是：", fragData.substring(2, fragData.length() - 2));
+        listNum = view.findViewById(R.id.list_num);
+        Ll_bgm = view.findViewById(R.id.Ll_bgm);
+        title = view.findViewById(R.id.title);
+        ctime = view.findViewById(R.id.ctime);
+        if (TextUtils.isEmpty(fragData)) {
+            Ll_bgm.removeAllViews();
+            Ll_bgm.setVisibility(View.GONE);
+        } else {
+            OnNextThread();
+        }
+    }
+
+    public void OnNextThread() {
+        Log.e("传递的参数是：", fragData.substring(2, fragData.length() - 2));
         new Thread() {
             @Override
             public void run() {
                 try {
                     JSONObject js = JSON.parseObject(JSON.parseArray(fragData).get(0).toString());
-                    Log.i("输出内容", "" + js.getString("created"));
+                    Log.e("输出内容", "" + js.getString("created"));
                     title.setText(js.getString("mark"));
                     ctime.setText(js.getString("created"));
                     if (js.getInteger("type") == 1) {//双色球
                         String balllist = js.getString("redball") + "," + js.getString("blueball");
                         String[] blist = balllist.split(",");
-                        Log.i("输出字符串：", balllist);
+                        Log.e("输出字符串：", balllist);
                         for (int i = 0; i < 7; i++) {
                             TextView num1 = new TextView(getActivity().getApplicationContext());
                             num1.setText(blist[i]);
@@ -103,16 +119,17 @@ public class CardFragment extends BaseFragment {
                         listNum.addView(num1);
                     }
                 } catch (JSONException e) {
-                    Log.i("输出错误", e.toString());
+                    Log.e("输出错误", e.toString());
                 }
             }
         }.start();
     }
 
+
     public static CardFragment newInstance(String param1) {
         CardFragment fragment = new CardFragment();
         Bundle args = new Bundle();
-        args.putString("fragData", param1);
+        args.putString(Data, param1);
         fragment.setArguments(args);
         return fragment;
     }
