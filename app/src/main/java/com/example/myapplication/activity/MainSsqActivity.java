@@ -1,27 +1,26 @@
 package com.example.myapplication.activity;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
-
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.FragmentTransaction;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.FragmentTransaction;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.Toast;
 
-import com.example.myapplication.CardFragment;
+import com.blankj.utilcode.util.BarUtils;
+import com.example.myapplication.fragment.CardFragment;
 import com.example.myapplication.R;
 import com.example.myapplication.base.BaseActivity;
 
@@ -35,10 +34,11 @@ import java.io.InputStreamReader;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-/**
- * @author Administrator
- */
-public class MainActivity extends BaseActivity implements View.OnClickListener {
+public class MainSsqActivity extends BaseActivity implements View.OnClickListener {
+
+    @BindView(R.id.Ll_title)
+    LinearLayout Ll_title;
+    private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     @Override
     public int getContentViewResId() {
@@ -47,6 +47,8 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
 
     @Override
     public void initView(@Nullable Bundle savedInstanceState) {
+        BarUtils.addMarginTopEqualStatusBarHeight(Ll_title);
+        BarUtils.setStatusBarColor(this, ContextCompat.getColor(this,R.color.red));
         verifyStoragePermissions(this);
         Log.i("获得文件内容：", readFromFile(checkFile()));
     }
@@ -57,7 +59,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
         switch (view.getId()) {
             case R.id.btn_add:
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), CardAddActivity.class);
+                intent.setClass(getApplicationContext(), AddCardActivity.class);
                 startActivity(intent);
                 finish();
                 break;
@@ -93,7 +95,7 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
     //读取文件
     public String readFromFile(String url) {
         File file = new File(url);
-        StringBuilder content = new StringBuilder();
+        String content = "";
         try {
             InputStream instream = new FileInputStream(file);
             InputStreamReader inputreader = new InputStreamReader(instream);
@@ -101,48 +103,35 @@ public class MainActivity extends BaseActivity implements View.OnClickListener {
             String line;
             //分行读取
             while ((line = buffreader.readLine()) != null) {
-                content.append(line).append("\n");
-                FragmentTransaction transaction = getFragmentManager().beginTransaction();
+                content += line + "\n";
+                FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 CardFragment listCard = new CardFragment();
                 Bundle bundle2 = new Bundle();
                 //String json_str="{'blueball':'3','created':'2017-07-23 19:49:14','mark':'双色球','redball':'','type':1}";
                 //String json_str=line.substring(1,line.length()-1);
                 bundle2.putString("fragData", line);
                 listCard.setArguments(bundle2);
-                transaction.add(R.id.list_content, listCard);
-                transaction.commit();
+                fragmentTransaction.add(R.id.list_content, listCard);
+                fragmentTransaction.commitAllowingStateLoss();
             }
             instream.close();
         } catch (IOException e) {
             Log.d("TestFile", e.getMessage());
         }
-        return content.toString();
+        return content;
     }
 
     //退出调用
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            dialog_loginOut();
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_HOME);
+            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(intent);
+            android.os.Process.killProcess(android.os.Process.myPid());
         }
         return false;
     }
-
-    //退出提示
-    protected void dialog_loginOut() {
-        new AlertDialog.Builder(this)
-                .setTitle("喂！")
-                .setMessage("就这样离开吗？")
-                .setPositiveButton("确定", (dialoginterface, i) -> {
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.addCategory(Intent.CATEGORY_HOME);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-                    startActivity(intent);
-                    android.os.Process.killProcess(android.os.Process.myPid());
-                })
-                .setNegativeButton(getString(R.string.cancel), (dialog, which) -> dialog.dismiss()).show();
-    }
-
-    private static final int REQUEST_EXTERNAL_STORAGE = 1;
 
     public void verifyStoragePermissions(Activity activity) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.M) {

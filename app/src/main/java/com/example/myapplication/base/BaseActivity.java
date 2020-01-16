@@ -1,9 +1,10 @@
 package com.example.myapplication.base;
 
 import android.os.Bundle;
+import android.support.annotation.Nullable;
+import android.support.v7.app.AppCompatActivity;
 
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AppCompatActivity;
+import com.blankj.utilcode.util.BarUtils;
 
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
@@ -17,6 +18,8 @@ public abstract class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(getContentViewResId());
         mUnbinder = ButterKnife.bind(this);
+        BarUtils.setStatusBarLightMode(this,true);
+        BarUtils.transparentStatusBar(this);
         initView(savedInstanceState);
     }
 

@@ -1,5 +1,7 @@
 <resources>
-    <string name="app_name">彩蝶一飞</string>
+    <string name="app_name">祝君好运</string>
 
     <string name="cancel">取消</string>
+    <string name="context">欢迎使用本软件，祝君早日登上人生巅峰。本软件所产生的号码只供参考，不作为实际意义。</string>
+    <string name="record">记录列表</string>
 </resources>

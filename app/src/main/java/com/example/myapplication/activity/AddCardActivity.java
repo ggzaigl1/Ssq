@@ -3,6 +3,9 @@ package com.example.myapplication.activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
+import android.support.annotation.IdRes;
+import android.support.annotation.Nullable;
+import android.support.v4.content.ContextCompat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -14,10 +17,8 @@ import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.IdRes;
-import androidx.annotation.Nullable;
-
 import com.alibaba.fastjson.JSONObject;
+import com.blankj.utilcode.util.BarUtils;
 import com.example.myapplication.R;
 import com.example.myapplication.base.BaseActivity;
 
@@ -33,7 +34,7 @@ import java.util.Random;
 import butterknife.BindView;
 import butterknife.OnClick;
 
-public class CardAddActivity extends BaseActivity implements View.OnClickListener {
+public class AddCardActivity  extends BaseActivity implements View.OnClickListener {
 
     @BindView(R.id.case_result)
     TextView caseResult;
@@ -46,11 +47,13 @@ public class CardAddActivity extends BaseActivity implements View.OnClickListene
     @BindView(R.id.case_length)
     EditText caseLength;
     @BindView(R.id.case_mark)
-    EditText caseMark;
+    TextView caseMark;
     @BindView(R.id.case_group)
     RadioGroup caseGroup;
     @BindView(R.id.case_zdy)
     LinearLayout caseZDY;
+    @BindView(R.id.Ll_title)
+    LinearLayout Ll_title;
 
     public JSONArray arrayResult = new JSONArray();
     public static final String bigChar = "ABCDEFGHJKLMNPQRSTUVWXYZ";
@@ -64,20 +67,19 @@ public class CardAddActivity extends BaseActivity implements View.OnClickListene
 
     @Override
     public void initView(@Nullable Bundle savedInstanceState) {
+        BarUtils.addMarginTopEqualStatusBarHeight(Ll_title);
+        BarUtils.setStatusBarColor(this, ContextCompat.getColor(this,R.color.red));
         caseMark.setText("双色球");
         //单项选择
-        caseGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup radioGroup, @IdRes int i) {
-                int radioButtonId = radioGroup.getCheckedRadioButtonId();
-                RadioButton rb = findViewById(radioButtonId);
-                if (radioButtonId == R.id.other_case) {
-                    caseZDY.setVisibility(View.VISIBLE);
-                } else {
-                    caseZDY.setVisibility(View.GONE);
-                }
-                caseMark.setText(rb.getText());
+        caseGroup.setOnCheckedChangeListener((radioGroup, i) -> {
+            int radioButtonId = radioGroup.getCheckedRadioButtonId();
+            RadioButton rb = findViewById(radioButtonId);
+            if (radioButtonId == R.id.other_case) {
+                caseZDY.setVisibility(View.VISIBLE);
+            } else {
+                caseZDY.setVisibility(View.GONE);
             }
+            caseMark.setText(rb.getText());
         });
     }
 
@@ -90,7 +92,7 @@ public class CardAddActivity extends BaseActivity implements View.OnClickListene
                 if (writeToFile(arrayResult.toString())) {
                     Toast.makeText(getApplicationContext(), "新的方案结果已经保存", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent();
-                    intent.setClass(getApplicationContext(), MainActivity.class);
+                    intent.setClass(getApplicationContext(), MainSsqActivity.class);
                     startActivity(intent);
                     finish();
                 }
@@ -98,7 +100,7 @@ public class CardAddActivity extends BaseActivity implements View.OnClickListene
             //返回按钮
             case R.id.btn_back:
                 Intent intent = new Intent();
-                intent.setClass(getApplicationContext(), MainActivity.class);
+                intent.setClass(getApplicationContext(), MainSsqActivity.class);
                 startActivity(intent);
                 finish();
                 break;
@@ -267,12 +269,10 @@ public class CardAddActivity extends BaseActivity implements View.OnClickListene
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
             Intent intent = new Intent();
-            intent.setClass(getApplicationContext(), MainActivity.class);
+            intent.setClass(getApplicationContext(), MainSsqActivity.class);
             startActivity(intent);
             finish();
         }
         return false;
     }
-
-
 }
