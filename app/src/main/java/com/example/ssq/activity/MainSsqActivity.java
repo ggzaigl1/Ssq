@@ -1,8 +1,9 @@
-package com.example.myapplication.activity;
+package com.example.ssq.activity;
 
 import android.Manifest;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Build;
@@ -11,10 +12,11 @@ import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v4.content.ContextCompat;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
@@ -22,11 +24,10 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 
 import com.blankj.utilcode.util.BarUtils;
-import com.blankj.utilcode.util.CleanUtils;
-import com.example.myapplication.fragment.Card1Fragment;
-import com.example.myapplication.fragment.CardFragment;
-import com.example.myapplication.R;
-import com.example.myapplication.base.BaseActivity;
+import com.example.ssq.R;
+import com.example.ssq.base.BaseActivity;
+import com.example.ssq.fragment.CardFragment;
+import com.example.ssq.utils.FileSizeUtil;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -42,9 +43,14 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
 
     @BindView(R.id.Ll_title)
     LinearLayout Ll_title;
+    @BindView(R.id.rv_view)
+    RecyclerView mRecyclerView;
+
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
     private File file;
     FragmentManager mFragmentManager;
+    String urlStr = Environment.getExternalStorageDirectory() + "/flcp/" + "ssq.txt";
+
     @Override
     public int getContentViewResId() {
         return R.layout.activity_main_ssq;
@@ -55,11 +61,14 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
         BarUtils.addMarginTopEqualStatusBarHeight(Ll_title);
         BarUtils.setStatusBarColor(this, ContextCompat.getColor(this, R.color.red));
         verifyStoragePermissions(this);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(layoutManager);
+
         mFragmentManager = getSupportFragmentManager();
         Log.e("获得文件内容：", readFromFile(checkFile()));
     }
 
-    @OnClick({R.id.btn_add, R.id.btn_info, R.id.btn_clean})
+    @OnClick({R.id.btn_add, R.id.btn_info})
     @Override
     public void onClick(View view) {
         switch (view.getId()) {
@@ -75,40 +84,12 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
                 startActivity(intent1);
                 finish();
                 break;
-            case R.id.btn_clean:
-                if (deleteFile(file)) {
-                    Toast.makeText(this, "缓存清除成功", Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(this, "缓存清除失败", Toast.LENGTH_SHORT).show();
-                }
+            default:
                 break;
         }
     }
 
 
-    /**
-     * 删除文件
-     *
-     * @param file
-     * @return
-     */
-    private boolean deleteFile(File file) {
-        if (file.isDirectory()) {
-            File[] files = file.listFiles();
-            for (File f : files) {
-                deleteFile(f);
-            }
-            file.delete();//如要保留文件夹，只删除文件，请注释这行
-            return true;
-        } else if (file.exists()) {
-            file.delete();
-            mFragmentManager.beginTransaction()
-                    .replace(R.id.Fl_context, Card1Fragment.newInstance())
-                    .commitAllowingStateLoss();
-            return true;
-        }
-        return false;
-    }
 
     //读取文件
     public String checkFile() {
@@ -133,7 +114,7 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
     //读取文件
     public String readFromFile(String url) {
         file = new File(url);
-        String content = "";
+        StringBuilder content = new StringBuilder();
         try {
             InputStream instream = new FileInputStream(file);
             InputStreamReader inputreader = new InputStreamReader(instream);
@@ -141,14 +122,8 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
             String line;
             //分行读取
             while ((line = buffreader.readLine()) != null) {
-                content += line + "\n";
-
-//                Bundle bundle = new Bundle();
-//                bundle.putString("fragData", line);
-//                mFragmentManager.beginTransaction()
-//                        .replace(R.id.list_content, CardFragment.newInstance(""))
-//                        .commit();
-
+//                content.append(line).append("\n");
+                content.append(line);
                 FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
                 CardFragment listCard = new CardFragment();
                 Bundle bundle2 = new Bundle();
@@ -163,19 +138,55 @@ public class MainSsqActivity extends BaseActivity implements View.OnClickListene
         } catch (IOException e) {
             Log.d("TestFile", e.getMessage());
         }
-        return content;
+        return content.toString();
+    }
+
+
+    private void ExitActivity() {
+        Intent intent = new Intent(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_HOME);
+        intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        android.os.Process.killProcess(android.os.Process.myPid());
     }
 
     //退出调用
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode == KeyEvent.KEYCODE_BACK && event.getRepeatCount() == 0) {
-            Intent intent = new Intent(Intent.ACTION_MAIN);
-            intent.addCategory(Intent.CATEGORY_HOME);
-            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
-            startActivity(intent);
-            android.os.Process.killProcess(android.os.Process.myPid());
+            dialog_loginOut("温馨提示", "真的要退出吗", "确定", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialog_loginOut("系统提示", "是否清空数据", "确定", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            FileSizeUtil.DeleteFolder(urlStr);
+                            ExitActivity();
+                        }
+                    }, "取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialogInterface, int i) {
+                            ExitActivity();
+                        }
+                    });
+                    ExitActivity();
+                }
+            }, "取消", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                    dialogInterface.dismiss();
+                }
+            });
         }
         return false;
+    }
+
+    //退出提示
+    protected void dialog_loginOut(String title, String message, String PositiveButtonContext, DialogInterface.OnClickListener PositiveButton, String NegativeButtonContext, DialogInterface.OnClickListener NegativeButton) {
+        new AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton(PositiveButtonContext, PositiveButton)
+                .setNegativeButton(NegativeButtonContext, NegativeButton).show();
     }
 
     public void verifyStoragePermissions(Activity activity) {

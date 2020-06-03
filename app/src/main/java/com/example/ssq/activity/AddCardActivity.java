@@ -1,9 +1,8 @@
-package com.example.myapplication.activity;
+package com.example.ssq.activity;
 
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Environment;
-import android.support.annotation.IdRes;
 import android.support.annotation.Nullable;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -19,8 +18,8 @@ import android.widget.Toast;
 
 import com.alibaba.fastjson.JSONObject;
 import com.blankj.utilcode.util.BarUtils;
-import com.example.myapplication.R;
-import com.example.myapplication.base.BaseActivity;
+import com.example.ssq.R;
+import com.example.ssq.base.BaseActivity;
 
 import org.json.JSONArray;
 

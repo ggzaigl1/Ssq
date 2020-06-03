@@ -1,4 +1,4 @@
-package com.example.myapplication.activity;
+package com.example.ssq.activity;
 
 import android.annotation.SuppressLint;
 import android.content.Intent;
@@ -8,8 +8,8 @@ import android.view.KeyEvent;
 import android.widget.TextView;
 
 import com.blankj.utilcode.util.AppUtils;
-import com.example.myapplication.R;
-import com.example.myapplication.base.BaseActivity;
+import com.example.ssq.R;
+import com.example.ssq.base.BaseActivity;
 
 import butterknife.BindView;
 

@@ -1,4 +1,4 @@
-package com.example.myapplication.base;
+package com.example.ssq.base;
 
 import android.os.Bundle;
 import android.support.annotation.Nullable;
